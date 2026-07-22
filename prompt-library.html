@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Library v1 - Customer Support Replies</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .toc-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .toc-toggle:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar a {
+            color: #555;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: block;
+            padding: 0.4rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar a:hover {
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .main-content h2 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .main-content h2:first-child {
+            margin-top: 0;
+        }
+
+        .main-content h3 {
+            color: #764ba2;
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .main-content h4 {
+            color: #555;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .main-content p {
+            margin-bottom: 1rem;
+            color: #555;
+        }
+
+        .main-content hr {
+            border: none;
+            border-top: 2px solid #f0f0f0;
+            margin: 2rem 0;
+        }
+
+        .template-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .template-box code {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .prompt-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .prompt-header h4 {
+            margin: 0;
+            color: #667eea;
+        }
+
+        .prompt-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .prompt-input {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            border-left: 3px solid #764ba2;
+        }
+
+        .prompt-output {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            border: 1px solid #e0e0e0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .output-label {
+            font-size: 0.85rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .metric-card h4 {
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-desc {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .checklist {
+            background: #f0f8ff;
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+
+        .checklist ul {
+            list-style: none;
+        }
+
+        .checklist li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .checklist li:before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .tip-box {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .tip-box strong {
+            color: #f57f17;
+        }
+
+        .success-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+
+        .roadmap-item {
+            padding: 1rem;
+            margin: 0.8rem 0;
+            background: #f8f9fa;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .roadmap-item.done {
+            border-left-color: #4caf50;
+            background: #f1f8e9;
+        }
+
+        .roadmap-item.planned {
+            border-left-color: #ffc107;
+            background: #fff8e1;
+        }
+
+        .version-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            margin-top: 2rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .footer p {
+            color: white;
+            margin: 0.5rem 0;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+
+            .navbar-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .main-content {
+                padding: 1.5rem;
+            }
+
+            .main-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>📧 Prompt Library v1</h1>
+            <button class="toc-toggle" onclick="toggleSidebar()">☰ Menu</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <h3>📑 Contents</h3>
+            <ul>
+                <li><a href="#section1">Template Structure</a></li>
+                <li><a href="#section2">Variable Guide</a></li>
+                <li><a href="#section3">5 Core Examples</a></li>
+                <li><a href="#section4">Advanced Prompts</a></li>
+                <li><a href="#section5">Success Metrics</a></li>
+                <li><a href="#section6">Pro Tips</a></li>
+                <li><a href="#section7">How to Use</a></li>
+                <li><a href="#section8">Quick Start</a></li>
+                <li><a href="#section9">Demo Video</a></li>
+                <li><a href="#section10">Roadmap</a></li>
+                <li><a href="#section11">FAQ</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <h2>🎯 Customer Support Replies</h2>
+            <p>A reusable prompt framework for generating professional, empathetic customer support responses. Tested with ChatGPT, Claude, and Meta AI.</p>
+
+            <!-- Section 1: Template -->
+            <h2 id="section1">1. Reusable Template Structure</h2>
+            <p>Use this base for all support emails/chats. Copy it and swap the variables <code>{{ }}</code> for each customer interaction.</p>
+            
+            <div class="template-box">
+                <strong>Role:</strong> You are a friendly, professional customer support agent for {{COMPANY_NAME}}.<br><br>
+                <strong>Context:</strong> A customer contacted us about {{ISSUE_TYPE}}. Their tone is {{CUSTOMER_TONE}}.<br>
+                Order/Issue ID: {{ORDER_ID}}. Product: {{PRODUCT_NAME}}.<br><br>
+                <strong>Task:</strong> Write a support reply that resolves {{ISSUE_TYPE}} and makes the customer feel heard.<br><br>
+                <strong>Format:</strong><br>
+                1. Greeting + Empathy<br>
+                2. Solution/Explanation<br>
+                3. Next Steps<br>
+                4. Closing + Signature<br><br>
+                <strong>Constraints:</strong><br>
+                - Tone: {{TONE}}<br>
+                - Length: {{LENGTH}} words max<br>
+                - Do not promise refunds unless {{CAN_REFUND}} = true<br>
+                - Use the customer's name: {{CUSTOMER_NAME}}
+            </div>
+
+            <!-- Section 2: Variable Reference -->
+            <h2 id="section2">2. Variable Reference Guide</h2>
+            <table>
+                <tr>
+                    <th>Variable</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td><code>{{COMPANY_NAME}}</code></td>
+                    <td>Your business/brand name</td>
+                    <td>NeuroFive Store</td>
+                </tr>
+                <tr>
+                    <td><code>{{CUSTOMER_NAME}}</code></td>
+                    <td>Customer's first name</td>
+                    <td>Sarah</td>
+                </tr>
+                <tr>
+                    <td><code>{{ISSUE_TYPE}}</code></td>
+                    <td>Problem category</td>
+                    <td>late delivery, refund request, defective product</td>
+                </tr>
+                <tr>
+                    <td><code>{{CUSTOMER_TONE}}</code></td>
+                    <td>How the customer feels</td>
+                    <td>frustrated, angry, calm, confused</td>
+                </tr>
+                <tr>
+                    <td><code>{{ORDER_ID}}</code></td>
+                    <td>Unique order/ticket number</td>
+                    <td>NF-8821</td>
+                </tr>
+                <tr>
+                    <td><code>{{PRODUCT_NAME}}</code></td>
+                    <td>Item purchased/service</td>
+                    <td>Wireless Headphones, Online Course</td>
+                </tr>
+                <tr>
+                    <td><code>{{TONE}}</code></td>
+                    <td>Response tone</td>
+                    <td>apologetic and helpful, professional and understanding</td>
+                </tr>
+                <tr>
+                    <td><code>{{LENGTH}}</code></td>
+                    <td>Word count limit</td>
+                    <td>150, 200</td>
+                </tr>
+                <tr>
+                    <td><code>{{CAN_REFUND}}</code></td>
+                    <td>Is refund authorized?</td>
+                    <td>true, false</td>
+                </tr>
+            </table>
+
+            <!-- Section 3: Five Core Examples -->
+            <h2 id="section3">3. Five Core Prompt Examples + AI Outputs</h2>
+
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h4>📦 Prompt 1: Late Delivery</h4>
+                    <span class="prompt-tag">Core</span>
+                </div>
+                <div class="prompt-input">
+                    <strong>Inputs:</strong><br>
+                    Customer: Sarah | Product: Wireless Headphones | Order ID: NF-8821 | Tone: Frustrated | Response Tone: Apologetic and helpful
+                </div>
+                <div class="prompt-output">
+                    <div class="output-label">✉️ Output:</div>
+                    <strong>Subject: Update on your NeuroFive Store Order NF-8821</strong><br><br>
+                    Hi Sarah,<br><br>
+                    I'm really sorry to hear your Wireless Headphones haven't arrived yet. I completely understand how frustrating this is, especially when you were expecting them.<br><br>
+                    I've checked with our courier and there was a delay at the sorting hub. The good news is your order is now out for delivery and should reach you within the next 2 business days.<br><br>
+                    <strong>Next steps:</strong> I'll personally track this and send you an update tomorrow with the tracking link. As a thank you for your patience, I've also added a 10% discount code to your account for your next purchase.<br><br>
+                    Thank you for choosing NeuroFive Store. We appreciate you.<br><br>
+                    Best regards,<br>
+                    Support Team
+                </div>
+            </div>
+
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h4>💰 Prompt 2: Refund Request</h4>
+                    <span class="prompt-tag">Core</span>
+                </div>
+                <div class="prompt-input">
+                    <strong>Inputs:</strong><br>
+                    Customer: James | Product: Online Course | Order ID: NF-9102 | Tone: Calm | Response Tone: Professional and understanding
+                </div>
+                <div class="prompt-output">
+                    <div class="output-label">✉️ Output:</div>
+                    <strong>Subject: Your Refund Request for Order NF-9102</strong><br><br>
+                    Hi James,<br><br>
+                    Thank you for reaching out and for giving our Online Course a try. I'm sorry it wasn't the right fit for you.<br><br>
+                    I've reviewed your order NF-9102 and you are eligible for a refund under our 14-day policy. I've initiated the refund to your original payment method. You should see it reflected in 5-7 business days.<br><br>
+                    <strong>Next steps:</strong> You'll receive a confirmation email once the refund is processed. You'll also automatically lose access to the course materials after 24 hours.<br><br>
+                    If there's anything else we can help with, just let us know.<br><br>
+                    Warm regards,<br>
+                    Support Team
+                </div>
+            </div>
+
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h4>⚙️ Prompt 3: Product Not Working</h4>
+                    <span class="prompt-tag">Core</span>
+                </div>
+                <div class="prompt-input">
+                    <strong>Inputs:</strong><br>
+                    Customer: Aisha | Product: Smart Watch | Order ID: NF-3345 | Tone: Angry | Response Tone: Calm and solution-focused
+                </div>
+                <div class="prompt-output">
+                    <div class="output-label">✉️ Output:</div>
+                    <strong>Subject: Let's fix your Smart Watch - Order NF-3345</strong><br><br>
+                    Hi Aisha,<br><br>
+                    I'm so sorry your Smart Watch isn't working properly. That's not the experience we want for you, and I'm here to get this sorted ASAP.<br><br>
+                    Let's try a quick fix first: Please hold the power button for 15 seconds to force restart. If that doesn't work, it may be a hardware issue.<br><br>
+                    <strong>Next steps:</strong> I can arrange a free replacement or a full refund for order NF-3345. Just reply with which option you prefer and your address, and we'll ship it out today with express delivery.<br><br>
+                    Again, I apologize for the trouble. We'll make this right.<br><br>
+                    Sincerely,<br>
+                    Support Team
+                </div>
+            </div>
+
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h4>📭 Prompt 4: Wrong Item Shipped</h4>
+                    <span class="prompt-tag">Core</span>
+                </div>
+                <div class="prompt-input">
+                    <strong>Inputs:</strong><br>
+                    Customer: David | Product: Laptop Bag | Order ID: NF-5567 | Tone: Disappointed | Response Tone: Empathetic and proactive
+                </div>
+                <div class="prompt-output">
+                    <div class="output-label">✉️ Output:</div>
+                    <strong>Subject: Sorry about your order NF-5567</strong><br><br>
+                    Hi David,<br><br>
+                    Thank you for letting us know, and I'm sorry we sent the wrong Laptop Bag. I understand how disappointing that is.<br><br>
+                    We've made a mistake and we'll fix it. I've already shipped the correct item to you with express delivery at no extra cost. You should receive it in 2-3 days.<br><br>
+                    <strong>Next steps:</strong> Please keep the wrong item. A courier will contact you in the next 48 hours to arrange a free pickup. I've also added a R200 voucher to your account.<br><br>
+                    Thank you for your patience.<br><br>
+                    Best,<br>
+                    Support Team
+                </div>
+            </div>
+
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h4>🔑 Prompt 5: Account Login Issue</h4>
+                    <span class="prompt-tag">Core</span>
+                </div>
+                <div class="prompt-input">
+                    <strong>Inputs:</strong><br>
+                    Customer: Priya | Product: NeuroFive Mobile App | Order ID: N/A | Tone: Confused | Response Tone: Patient and clear
+                </div>
+                <div class="prompt-output">
+                    <div class="output-label">✉️ Output:</div>
+                    <strong>Subject: Help with logging into NeuroFive App</strong><br><br>
+                    Hi Priya,<br><br>
+                    No worries — I can help you get back into your account!<br><br>
+                    It looks like you may need to reset your password. Please tap "Forgot Password" on the login screen of the NeuroFive Mobile App and we'll send a reset link to your email.<br><br>
+                    <strong>Next steps:</strong><br>
+                    1. Check your inbox and spam folder for the reset email<br>
+                    2. Create a new password<br>
+                    3. Log back in<br><br>
+                    If you still have trouble, just reply with the email linked to your account and I'll check it for you.<br><br>
+                    We're here to help!<br>
+                    Support Team
+                </div>
+            </div>
+
+            <!-- Section 4: Advanced Prompts -->
+            <h2 id="section4">4. Three Advanced Prompt Examples (Escalations & Complaints)</h2>
+
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h4>⚠️ Prompt 6: Complaint / Service Failure</h4>
+                    <span class="prompt-tag">Advanced</span>
+                </div>
+                <div class="prompt-input">
+                    <strong>Inputs:</strong><br>
+                    Customer: Marcus | Product: Premium Membership | Order ID: NF-4429 | Tone: Frustrated | CAN_REFUND: true
+                </div>
+                <div class="prompt-output">
+                    <div class="output-label">✉️ Output:</div>
+                    <strong>Subject: We're sorry, and here's how we'll make this right</strong><br><br>
+                    Hi Marcus,<br><br>
+                    I read your complaint about your Premium Membership experience, and I want to sincerely apologize. You deserve better, and we failed to deliver.<br><br>
+                    I've personally reviewed what happened. Our team should have caught this issue days ago. Here's what I'm doing immediately:<br><br>
+                    1. I've issued a full refund for this billing cycle (will appear in 3-5 business days)<br>
+                    2. I'm upgrading you to our VIP tier at no cost for the next 3 months<br>
+                    3. You'll have my direct contact for priority support going forward<br><br>
+                    <strong>Next steps:</strong> I'd love to understand what we can do differently. Can I schedule a quick 15-min call this week to discuss?<br><br>
+                    Thank you for giving us a chance to make this right.<br><br>
+                    Sincerely,<br>
+                    Support Lead<br>
+                    Support Team
+                </div>
+            </div>
+
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h4>🎉 Prompt 7: Upsell / Cross-Sell (Positive Tone)</h4>
+                    <span class="prompt-tag">Advanced</span>
+                </div>
+                <div class="prompt-input">
+                    <strong>Inputs:</strong><br>
+                    Customer: Lisa | Product: Fitness Tracker | Order ID: NF-7712 | Tone: Happy
+                </div>
+                <div class="prompt-output">
+                    <div class="output-label">✉️ Output:</div>
+                    <strong>Subject: You're doing great! 🎉</strong><br><br>
+                    Hi Lisa,<br><br>
+                    I noticed you've been consistently using your Fitness Tracker and hitting your goals — that's amazing!<br><br>
+                    Since you love the tracker so much, I wanted to let you know about our Companion App, which syncs with your device and gives you deeper insights into your activity, sleep, and recovery. Many customers love the extra detail it provides.<br><br>
+                    If you'd like to try it, I've added a 30-day free trial to your account. Just log in to see it.<br><br>
+                    No pressure at all — just wanted to make sure you knew about it!<br><br>
+                    Best,<br>
+                    Support Team
+                </div>
+            </div>
+
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h4>↩️ Prompt 8: Reactivation / Win-Back</h4>
+                    <span class="prompt-tag">Advanced</span>
+                </div>
+                <div class="prompt-input">
+                    <strong>Inputs:</strong><br>
+                    Customer: Tom | Product: Subscription Service | Tone: Cold/Indifferent | Response Tone: Friendly and humble
+                </div>
+                <div class="prompt-output">
+                    <div class="output-label">✉️ Output:</div>
+                    <strong>Subject: We miss you, Tom — special offer inside</strong><br><br>
+                    Hi Tom,<br><br>
+                    I noticed you haven't used your Subscription Service in 3 months, and I wanted to reach out. We'd love to have you back.<br><br>
+                    Here's what's new since you left:<br>
+                    - New features you requested (automated dashboards, team collaboration)<br>
+                    - 50% faster performance<br>
+                    - Mobile app (finally! 😊)<br><br>
+                    As a thank you for being a customer, I'd like to offer you <strong>3 months at 50% off</strong> if you decide to come back this week.<br><br>
+                    No hard feelings if it's not the right time — I'm here if you have any questions.<br><br>
+                    Best,<br>
+                    Support Team
+                </div>
+            </div>
+
+            <!-- Section 5: Success Metrics -->
+            <h2 id="section5">5. Success Metrics for Each Prompt</h2>
+            <p>Track these KPIs to measure if your support responses are working:</p>
+            
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <h4>First Response Time</h4>
+                    <div class="metric-value">&lt; 2 hrs</div>
+                    <div class="metric-desc">Track timestamp of response sent</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Customer Satisfaction</h4>
+                    <div class="metric-value">≥ 90%</div>
+                    <div class="metric-desc">Post-interaction survey (1-5 scale)</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Resolution Rate</h4>
+                    <div class="metric-value">≥ 85%</div>
+                    <div class="metric-desc">Issues fully resolved on first reply</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Repeat Complaints</h4>
+                    <div class="metric-value">&lt; 5%</div>
+                    <div class="metric-desc">Same customer, same issue, within 30 days</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Customer Retention</h4>
+                    <div class="metric-value">≥ 80%</div>
+                    <div class="metric-desc">Customers active 30+ days after support</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Response Length</h4>
+                    <div class="metric-value">150-200 words</div>
+                    <div class="metric-desc">Lean, scannable replies; mobile-friendly</div>
+                </div>
+            </div>
+
+            <!-- Section 6: Pro Tips -->
+            <h2 id="section6">6. Pro Tips for Best Results</h2>
+
+            <h3>Before You Run the Prompt:</h3>
+            <div class="tip-box">
+                <strong>✅ Personalize everything</strong> — Use customer's name, order ID, and specific product name (not "item")
+            </div>
+            <div class="tip-box">
+                <strong>✅ Match the tone</strong> — If customer is angry, sound calm and solution-focused. If confused, sound patient and clear
+            </div>
+            <div class="tip-box">
+                <strong>✅ Test first</strong> — Run 2-3 prompts in your AI tool before going live with customers
+            </div>
+            <div class="tip-box">
+                <strong>✅ Keep it under 200 words</strong> — Most people read on mobile; long replies get deleted
+            </div>
+
+            <h3>While the AI Generates:</h3>
+            <div class="tip-box">
+                <strong>📋 Review the output</strong> — Check that it:
+                <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                    <li>Starts with empathy (not just "here's the fix")</li>
+                    <li>Has clear, numbered next steps</li>
+                    <li>Uses customer's name at least once</li>
+                    <li>Offers a solution or next action (not just an explanation)</li>
+                </ul>
+            </div>
+
+            <h3>After You Send It:</h3>
+            <div class="tip-box">
+                <strong>📊 Log the response</strong> — Save to a CRM or spreadsheet to track what works
+            </div>
+            <div class="tip-box">
+                <strong>👂 Listen for feedback</strong> — Did customer reply? Did they feel heard?
+            </div>
+            <div class="tip-box">
+                <strong>🔄 Iterate</strong> — Adjust tone/template based on what reduces follow-up emails
+            </div>
+
+            <h3>AI Tool Tips:</h3>
+            <table>
+                <tr>
+                    <th>Tool</th>
+                    <th>Best For</th>
+                </tr>
+                <tr>
+                    <td><strong>ChatGPT</strong></td>
+                    <td>Longer, warmer responses; good empathy</td>
+                </tr>
+                <tr>
+                    <td><strong>Claude</strong></td>
+                    <td>Technical/complex issues; clearer logic</td>
+                </tr>
+                <tr>
+                    <td><strong>Meta AI</strong></td>
+                    <td>Casual, friendly tone; faster</td>
+                </tr>
+            </table>
+
+            <!-- Section 7: How to Use -->
+            <h2 id="section7">7. How to Use This Library</h2>
+
+            <h3>Step-by-Step Workflow:</h3>
+            <ol style="margin-left: 1.5rem; line-height: 2;">
+                <li><strong>Identify the issue type</strong> — Match customer problem to one of the 8 prompts (or pick template + variables)</li>
+                <li><strong>Fill in all variables</strong> — Replace all <code>{{ }}</code> with customer-specific info</li>
+                <li><strong>Copy the prompt</strong> — Paste into ChatGPT, Claude, or Meta AI</li>
+                <li><strong>Generate response</strong> — Let AI write the reply</li>
+                <li><strong>Review</strong> — Read output; adjust tone/length if needed</li>
+                <li><strong>Send to customer</strong> — Share the final response</li>
+                <li><strong>Save & log</strong> — Keep a copy in your CRM for team reference</li>
+            </ol>
+
+            <h3>Template Customization:</h3>
+            <p>If your company has different policies (e.g., refund window, warranty), edit the template section and save as <strong>Prompt Library v1 - [Your Company Name]</strong>.</p>
+
+            <!-- Section 8: Quick Start -->
+            <h2 id="section8">8. Getting Started: Quick Checklist</h2>
+            <div class="checklist">
+                <ul>
+                    <li>Download this file as <code>.md</code> or paste into Google Docs / Notion</li>
+                    <li>Customize Section 1 — Update company name, policies, tone guidelines</li>
+                    <li>Test all 5 core prompts — Run in your AI tool; save screenshots</li>
+                    <li>Train your team — Share library with support staff; do a 15-min walkthrough</li>
+                    <li>Pick 2 scenarios — Start with Prompt 1 (Late Delivery) and Prompt 3 (Product Issue)</li>
+                    <li>Track results — Log 20 responses over 2 weeks; measure CSAT</li>
+                    <li>Refine — Adjust template based on what resonates with your customers</li>
+                </ul>
+            </div>
+
+            <!-- Section 9: Demo Video -->
+            <h2 id="section9">9. Demo Video Script (2-3 min Loom)</h2>
+
+            <h3>Outline:</h3>
+            <ol style="margin-left: 1.5rem; line-height: 2;">
+                <li><strong>Intro (15 sec)</strong> — "This is my Prompt Library, a template system for 10x faster support replies"</li>
+                <li><strong>Show Template (30 sec)</strong> — Display Section 1; highlight key variables</li>
+                <li><strong>Run Prompt 1 Live (60 sec)</strong> — Fill in variables, paste into ChatGPT, show output</li>
+                <li><strong>Run Prompt 3 Live (60 sec)</strong> — Different tone (calm/solution-focused); show how output changes</li>
+                <li><strong>Outro (15 sec)</strong> — "Try it with your own company. Questions?"</li>
+            </ol>
+
+            <h3>Recording Tips:</h3>
+            <ul style="margin-left: 1.5rem;">
+                <li>Use a clean desktop / Canva mockup as background</li>
+                <li>Set ChatGPT font to 120% zoom (easier to read on video)</li>
+                <li>Narrate as you fill variables — explain <em>why</em> you picked each one</li>
+                <li>Pause briefly on each output to let viewers absorb</li>
+            </ul>
+
+            <!-- Section 10: Roadmap -->
+            <h2 id="section10">10. Version History & Roadmap</h2>
+
+            <h3>Current Version:</h3>
+            <div class="roadmap-item done">
+                <strong><span class="version-tag">v1.0</span> July 2026</strong>
+                <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                    <li><span class="success-badge">✅</span> 5 core support prompts (late delivery, refund, defective, wrong item, login)</li>
+                    <li><span class="success-badge">✅</span> 3 advanced prompts (escalation, upsell, reactivation)</li>
+                    <li><span class="success-badge">✅</span> Reusable template structure</li>
+                    <li><span class="success-badge">✅</span> Variable reference guide</li>
+                    <li><span class="success-badge">✅</span> Success metrics</li>
+                </ul>
+            </div>
+
+            <h3>Planned for v2:</h3>
+            <div class="roadmap-item planned">
+                <strong>🔄 Coming Soon</strong>
+                <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                    <li>Add 3 more scenarios (billing issues, feature requests, pre-sales questions)</li>
+                    <li>AI training guide for your support team</li>
+                    <li>Real customer examples (anonymized)</li>
+                    <li>Integration templates for HubSpot, Zendesk, Intercom</li>
+                    <li>Multi-language versions (Spanish, French, German)</li>
+                </ul>
+            </div>
+
+            <h3>Share Your Feedback:</h3>
+            <p>If you find prompts that work really well (or need tweaking), please share:</p>
+            <ul style="margin-left: 1.5rem;">
+                <li>Which prompt you used</li>
+                <li>What you changed</li>
+                <li>How it performed (CSAT, resolution rate)</li>
+                <li>Any customer feedback</li>
+            </ul>
+
+            <!-- Section 11: FAQ -->
+            <h2 id="section11">11. Support & Questions</h2>
+            <div class="tip-box">
+                <strong>❓ Need help filling variables?</strong> Check Section 2 (Variable Reference)
+            </div>
+            <div class="tip-box">
+                <strong>❓ Want to tweak a response?</strong> Use Section 6 (Pro Tips)
+            </div>
+            <div class="tip-box">
+                <strong>❓ Need more scenarios?</strong> Jump to Section 4 (Advanced Prompts) or create your own
+            </div>
+            <div class="tip-box">
+                <strong>❓ Track performance?</strong> Use the metrics in Section 5
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p style="font-size: 1.5rem; margin-bottom: 1rem;">🎉 Happy Supporting!</p>
+                <p><em>Made with ❤️ for teams that want to scale support without losing the personal touch.</em></p>
+                <p style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.9;">Prompt Library v1 • Updated July 2026</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Close sidebar on link click (mobile)
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.addEventListener('click', () => {
+                    document.getElementById('sidebar').classList.add('hidden');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Message Classification Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-card h3 {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        
+        .metric-card .score {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 40px;
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .classification-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .classification-item {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .classification-item.complaint {
+            border-left-color: #f56565;
+        }
+        
+        .classification-item.question {
+            border-left-color: #ecc94b;
+        }
+        
+        .classification-item.praise {
+            border-left-color: #48bb78;
+        }
+        
+        .classification-item h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .classification-item p {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        
+        .key-findings {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .key-findings h3 {
+            color: #c85a17;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .key-findings ul {
+            list-style: none;
+        }
+        
+        .key-findings li {
+            color: #7c3c0d;
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.6;
+        }
+        
+        .key-findings li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #c85a17;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .footer {
+            background: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Customer Message Classification Analysis</h1>
+            <p>Zero-Shot vs Few-Shot Prompting Performance</p>
+        </div>
+        
+        <div class="content">
+            <div class="metrics">
+                <div class="metric-card">
+                    <h3>ChatGPT</h3>
+                    <div class="score">70%</div>
+                    <p style="margin-top: 10px; color: #666;">Zero-Shot Accuracy</p>
+                </div>
+                <div class="metric-card">
+                    <h3>Gemini</h3>
+                    <div class="score">80%</div>
+                    <p style="margin-top: 10px; color: #666;">Zero-Shot Accuracy</p>
+                </div>
+                <div class="metric-card">
+                    <h3>Claude</h3>
+                    <div class="score">60%</div>
+                    <p style="margin-top: 10px; color: #666;">Zero-Shot Accuracy</p>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+            
+            <div class="classification-grid">
+                <div class="classification-item complaint">
+                    <h4>😠 Complaint (3)</h4>
+                    <p><strong>Examples:</strong> Billing issues, damaged orders, app crashes, rude service</p>
+                    <p><strong>Indicator:</strong> Problems or negative experiences</p>
+                </div>
+                <div class="classification-item question">
+                    <h4>❓ Question (3)</h4>
+                    <p><strong>Examples:</strong> Password reset, data export, billing date change</p>
+                    <p><strong>Indicator:</strong> Requests for information or features</p>
+                </div>
+                <div class="classification-item praise">
+                    <h4>😊 Praise (4)</h4>
+                    <p><strong>Examples:</strong> Performance improvements, support appreciation, satisfaction</p>
+                    <p><strong>Indicator:</strong> Positive feedback and appreciation</p>
+                </div>
+            </div>
+            
+            <div class="key-findings">
+                <h3>🔍 Key Findings</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Approach</th>
+                            <th>Accuracy</th>
+                            <th>Consistency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>ChatGPT</strong></td>
+                            <td>Zero-Shot</td>
+                            <td>70%</td>
+                            <td>Moderate</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gemini</strong></td>
+                            <td>Zero-Shot</td>
+                            <td>80%</td>
+                            <td>Good</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Claude</strong></td>
+                            <td>Zero-Shot</td>
+                            <td>60%</td>
+                            <td>Low</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <ul style="margin-top: 20px;">
+                    <li><strong>Few-shot prompting significantly outperformed zero-shot</strong> across all three models (ChatGPT, Claude, and Gemini)</li>
+                    <li><strong>The 3 examples reduced mistakes</strong> by helping models clearly understand how to classify Complaint, Question, and Praise categories</li>
+                    <li><strong>Without examples, models showed inconsistency</strong> and often confused messages with similar tones or sentiment</li>
+                    <li><strong>Pattern recognition improved dramatically</strong> with just a few labeled examples to guide classification</li>
+                    <li><strong>Simple yet effective:</strong> Providing AI models with just a few examples is the most practical way to achieve better accuracy and reliability</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>📊 Analysis: Customer Message Classification Study | Generated for Portfolio</p>
+        </div>
+    </div>
+    
+    <script>
+        // Create comparison chart
+        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['ChatGPT', 'Gemini', 'Claude'],
+                datasets: [{
+                    label: 'Zero-Shot Accuracy (%)',
+                    data: [70, 80, 60],
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(118, 75, 162, 0.8)',
+                        'rgba(244, 63, 94, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(102, 126, 234)',
+                        'rgb(118, 75, 162)',
+                        'rgb(244, 63, 94)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    padding: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { size: 14 },
+                            padding: 20
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            },
+                            font: { size: 12 }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 12 } }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
