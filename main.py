@@ -8,6 +8,7 @@ import openai
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 # Load API key from environment
@@ -50,6 +51,9 @@ MODEL_NAME = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
 app = FastAPI(title="Ava - Neurofive Sales Assistant")
 
+# Mount static files so /static/* works for index assets
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
+
 # Allow local frontend access
 app.add_middleware(
     CORSMiddleware,
@@ -59,8 +63,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve static frontend file from the repository root (we'll add static/index.html)
-
+# Serve static frontend file from the repository root
 class ChatRequest(BaseModel):
     message: str
     history: Optional[List[Dict]] = None
@@ -89,13 +92,13 @@ def send_sales_email(user_message: str, contact: Optional[Dict] = None) -> bool:
     message = f"From: {SMTP_USER}\nTo: {SALES_EMAIL}\nSubject: {subject}\n\n{body}"
 
     try:
-        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
-        server.starttls()
-        server.login(SMTP_USER, SMTP_PASS)
-        server.sendmail(SMTP_USER, [SALES_EMAIL], message)
-        server.quit()
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(SMTP_USER, [SALES_EMAIL], message)
         return True
     except Exception as e:
+        # Keep the error logged for debugging but do not raise
         print("Failed to send sales email:", e)
         return False
 
@@ -148,6 +151,7 @@ async def chat(req: ChatRequest):
             temperature=0.7,
             max_tokens=180,
         )
+        # compatible with existing openai-python response shape
         reply = resp.choices[0].message.content.strip()
 
         # Post-check length
@@ -165,4 +169,6 @@ async def chat(req: ChatRequest):
 
 @app.get("/")
 async def index():
-    return FileResponse("static/index.html")
+    # Return the static index.html from the bundled static directory
+    index_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
+    return FileResponse(index_path)
