@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoT vs Plain Prompt Demo - Neurofive</title>
+<style>
+  body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', Arial; padding: 20px; }
+  h1 { text-align: center; color: #00c6ff; }
+ .container { display: flex; gap: 20px; max-width: 1200px; margin: auto; }
+ .box { flex: 1; background: #111; border: 1px solid #333; border-radius: 12px; padding: 20px; }
+ .box h2 { font-size: 16px; margin-bottom: 10px; }
+ .prompt { background: #1e1e1e; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; white-space: pre-wrap; }
+ .answer { background: #222; padding: 12px; border-radius: 8px; min-height: 250px; font-size: 14px; line-height: 1.6; }
+ .btn { width: 100%; padding: 12px; background: linear-gradient(90deg, #00c6ff, #0072ff); border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; font-size: 15px; }
+ .btn:disabled { background: #333; }
+  input { width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: #fff; }
+ .correct { color: #4ade80; font-weight: bold; }
+ .wrong { color: #f87171; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>Chain-of-Thought vs Plain Prompt Demo</h1>
+<p style="text-align:center; margin-bottom:20px;">Powered by Neurofive Solutions</p>
+
+<input type="password" id="apiKey" placeholder="Paste your OpenAI API Key here: sk-..." />
+
+<div class="container">
+  <!-- BOX 1 -->
+  <div class="box">
+    <h2>RUN A: Plain Prompt</h2>
+    <div class="prompt">Neurofive Store sold 120 laptops. 40% were returned. Of the remaining laptops, 25% were sold at a 15% discount. If the original price is $800, how much total revenue did Neurofive make?</div>
+    <button class="btn" onclick="runPlain()">Run Plain Prompt</button>
+    <div class="answer" id="plainAnswer">Click button to run...</div>
+  </div>
+
+  <!-- BOX 2 -->
+  <div class="box">
+    <h2>RUN B: CoT + Persona Prompt</h2>
+    <div class="prompt">You are a senior data analyst at Neurofive Solutions. 
+Think step-by-step before answering.
+
+Neurofive Store sold 120 laptops. 40% were returned. Of the remaining laptops, 25% were sold at a 15% discount. If the original price is $800, how much total revenue did Neurofive make?</div>
+    <button class="btn" onclick="runCoT()">Run CoT + Persona</button>
+    <div class="answer" id="cotAnswer">Click button to run...</div>
+  </div>
+</div>
+
+<p style="max-width:1200px; margin:20px auto; background:#111; padding:15px; border-radius:8px;">
+<b>Conclusion:</b> Chain-of-Thought + Persona forces the AI to reason step-by-step and act like an expert. 
+This leads to higher accuracy and clarity for business problems vs a plain prompt that often guesses.
+</p>
+
+<script>
+const PROBLEM = "Neurofive Store sold 120 laptops. 40% were returned. Of the remaining laptops, 25% were sold at a 15% discount. If the original price is $800, how much total revenue did Neurofive make?";
+
+async function callOpenAI(messages, outputId, btn) {
+  const key = document.getElementById("apiKey").value.trim();
+  if(!key) { alert("Please enter your OpenAI API Key first"); return; }
+  
+  btn.disabled = true;
+  document.getElementById(outputId).innerHTML = "Thinking...";
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
+      body: JSON.stringify({ model: "gpt-4o-mini", messages: messages, temperature: 0.3, max_tokens: 400 })
+    });
+    const data = await res.json();
+    let answer = data.choices[0].message.content;
+    
+    // Highlight correct answer
+    if(answer.includes("55440")) answer = answer.replace("55440", `<span class="correct">55440</span>`);
+    if(answer.includes("57600")) answer = answer.replace("57600", `<span class="wrong">57600</span>`);
+
+    document.getElementById(outputId).innerHTML = answer;
+  } catch(e) {
+    document.getElementById(outputId).innerHTML = "Error: " + e.message;
+  }
+  btn.disabled = false;
+}
+
+function runPlain() {
+  const btn = event.target;
+  callOpenAI([{role: "user", content: PROBLEM}], "plainAnswer", btn);
+}
+
+function runCoT() {
+  const btn = event.target;
+  const cotPrompt = `You are a senior data analyst at Neurofive Solutions. \nThink step-by-step before answering.\n\n${PROBLEM}`;
+  callOpenAI([{role: "user", content: cotPrompt}], "cotAnswer", btn);
+}
+</script>
+
+</body>
+</html>
